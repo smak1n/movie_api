@@ -2,10 +2,6 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 
-//middleware
-app.use(morgan('common'));
-app.use(express.static('public'));
-
 // my top 10 sci-fy movies
 let favoriteMovies = [
   {
@@ -49,6 +45,10 @@ let favoriteMovies = [
     year: 2021
   }
 ];
+
+//middleware
+app.use(morgan('common'));
+app.use(express.static('public'));
 
 // GET requests
 app.get('/', (req, res) => {
