@@ -47,12 +47,11 @@
           <td>/movies/:title</td>
           <td>None</td>
           <td>
-            A JSON object holding data about a single movie (title, year, genre, director):<br>
+            A JSON object holding data about a single movie (title, genre, director):<br>
             {<br>
-              title: 'Interstellar',<br>
-              year: 2014,<br>
-              genre: ['Adventure', 'Drama', 'Sci-Fi'],<br>
-              director: 'Christopher Nolan'<br>
+              "Title" : "Interstellar",<br>
+              "Genre": "Sci-Fi",<br>
+              "Director" : "Christopher Nolan"<br>
             }
           </td>
         </tr>
@@ -62,7 +61,7 @@
           <td>GET</td>
           <td>/movies/genres/:name</td>
           <td>None</td>
-          <td>A JSON Object holding data about a certain genre(e.g. “Thriller”).</td>
+          <td>A JSON Object holding data about a certain genre(e.g. “Sci-Fi”).</td>
         </tr>
         <tr>
           <td>Return data about a director to the user</td>
@@ -77,32 +76,32 @@
           <td>/users</td>
           <td>POST</td>
           <td>/users</td>
-          <td>A JSON object holding data about the user to add, structured like: <code>{<br>"Username" : "hello_world",<br>"Password" : "helloworld",<br>"Email" : "helloworld@world.com"<br>}</code></td>
-          <td>A JSON object holding data about the user that was added</td>
+          <td>A JSON object holding data about the user to add, structured like: <code><br>{<br>"Username" : "Viktor",<br>"Password" : "test123",<br>"Email" : "vik24@gmail.com"<br>"Birthday" : "1987-07-08"<br>}</code></td>
+          <td>A JSON object holding data about the user.Example:<code><br>{<br>"Username" : "Viktor",<br>"Password" : "test123",<br>"Email" : "vik24@gmail.com"<br>"Birthday" : "1987-07-08T00:00:00.000Z"<br>"FavoriteMovies" : [],<br>"_id": "61ad24cde6abe86038656097"<br>"__v":0<br>}</code></td>
         </tr>
         <tr>
-          <td>Allow users to update their user info (username)</td>
+          <td>Allow users to update their user info (username,password,email)</td>
           <td>/users/[Username]</td>
           <td>PUT</td>
           <td>/users/:username</td>
-          <td>None</td>
-          <td>A text message indicating the username was updated.</td>
+          <td>A JSON object structured like: <code><br>{<br>"Username" : "Viktor",<br>"Password" : "updatedPassword",<br>"Email" : "vikUpdatemail@hotmail.com"<br>"Birthday" : "2000-05-05"<br>}</code></td>
+          <td>A JSON object structured like: <code><br>{<br>"_id":"61ad24cde6abe86038656097",<br>"Username":"Viktor",<br>"Password":"updatedPassword",<br>"Email":"vikUpdatemail@hotmail.com",<br>"Birthday":"2000-05-05T00:00:00.000Z",<br>"FavoriteMovies":[],<br>"__v":0<br>}</code></td>
         </tr>
         <tr>
           <td>Allow users to add a movie to their list of favorites</td>
-          <td>/users/[Username]/favorites</td>
+          <td>/users/[Username]/movies/[MovieID]</td>
           <td>POST</td>
-          <td>/users/:username/favorites</td>
+          <td>/users/:username/movies/:MovieID</td>
           <td>None</td>
-          <td>A text message indicating the movie has been added to the user's favorites.</td>
+          <td>A JSON object holding the data of the user, including the movieId that is added in FavoriteMovies.</td>
         </tr>
         <tr>
           <td>Allow users to remove a movie from their list of favorites</td>
-          <td>/users/[Username]/favorites</td>
+          <td>/users/[Username]/movies/[MovieID]</td>
           <td>DELETE</td>
-          <td>/users/:username/favorites</td>
+          <td>/users/:username/movies/:MovieID</td>
           <td>None</td>
-          <td>A text message indicating the movie has been removed from the user's favorites.</td>
+          <td>A JSON object holding the data of the user and showing one less MovieId in FavoriteMovies.</td>
         </tr>
         <tr>
           <td>Allow existing users to deregister</td>
@@ -110,7 +109,7 @@
           <td>DELETE</td>
           <td>/users/:username</td>
           <td>None</td>
-          <td>A text message indicating that a user has been deregistered.</td>
+          <td>A text message indicating that a user has been deleted.</td>
         </tr>
       </tbody>
     </table>
