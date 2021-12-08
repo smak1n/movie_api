@@ -33,7 +33,7 @@ app.get('/documentation', (req, res) => {
 app.get('/movies', (req, res) => {
   Movies.find()
     .then((movies) => {
-      res.status(201).json(movies);
+      res.status(200).json(movies);
     })
     .catch((error) => {
       console.error(error);
@@ -45,7 +45,7 @@ app.get('/movies', (req, res) => {
 app.get('/movies/:Title', (req, res) => {
   Movies.findOne({Title: req.params.Title})
     .then((movie) => {
-      res.status(201).json(movie);
+      res.status(200).json(movie);
     })
     .catch((err) => {//error callback
       console.error(err);
@@ -57,7 +57,7 @@ app.get('/movies/:Title', (req, res) => {
 app.get('/movies/genres/:Name', (req, res) => {
   Movies.find({"Genre.Name": req.params.Name})
     .then((movies) => {
-      res.status(201).json(movies);
+      res.status(200).json(movies);
     })
     .catch((err) => {
       console.error(err);
@@ -69,7 +69,7 @@ app.get('/movies/genres/:Name', (req, res) => {
 app.get('/movies/directors/:Name', (req, res) => {
   Movies.find({"Director.Name": req.params.Name})
     .then((directors)=> {
-      res.status(201).json(directors);
+      res.status(200).json(directors);
     })
     .catch((err)=> {
       console.error(err);
@@ -81,7 +81,7 @@ app.get('/movies/directors/:Name', (req, res) => {
 app.get('/users', (req, res) => {
   Users.find()
     .then((users) => {
-      res.status(201).json(users);
+      res.status(200).json(users);
     })
     .catch((err) => {
       console.error(err);
@@ -93,7 +93,7 @@ app.get('/users', (req, res) => {
 app.get('/users/:Username', (req, res) =>{
   Users.findOne({username: req.params.Username})
     .then((users)=> {
-      res.status(201).json(users);
+      res.status(200).json(users);
     })
     .catch((err)=> {
       console.error(err);
@@ -151,8 +151,8 @@ app.put('/users/:Username', (req, res) => {
 
 // Allow users to add a movie to their list of favorites
 app.post('/users/:Username/movies/:MovieID', (req, res) => {
-  Users.findOneAndUpdate({ Username: req.params.Username }, {
-    $push: { FavoriteMovies: req.params.MovieID }
+  Users.findOneAndUpdate({ Username: req.params.username }, {
+    $addToSet: { FavoriteMovies: req.params.MovieID }
   },
   { new: true }, // This line makes sure that the updated document is returned
  (err, updatedUser) => {
@@ -186,7 +186,7 @@ app.delete('/users/:Username', (req, res) => {
   Users.findOneAndRemove({ Username: req.params.Username })
     .then((user) => {
       if (!user) {
-        res.status(400).send(req.params.Username + ' was not found');
+        res.status(404).send(req.params.Username + ' was not found');
       } else {
         res.status(200).send(req.params.Username + ' was deleted.');
       }
