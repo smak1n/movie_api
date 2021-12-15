@@ -170,6 +170,9 @@ app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
   }
 
   let hashedPassword = Users.hashPassword(req.body.Password);
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('Not allowed to perform this action! Wrong account!');
+  } else {
   Users.findOneAndUpdate({ Username: req.params.Username }, { $set:
     {
       Username: req.body.Username,
@@ -187,10 +190,14 @@ app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
       res.json(updatedUser);
     }
   });
+  }
 });
 
 // Allow users to add a movie to their list of favorites
 app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('Not allowed to perform this action! Wrong account!');
+  } else {
   Users.findOneAndUpdate({ Username: req.params.Username }, {
     $addToSet: { FavoriteMovies: req.params.MovieID }
   },
@@ -203,10 +210,14 @@ app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { sess
      res.json(updatedUser);
    }
  });
+  }
 });
 
 // Allow users to remove a movie from their list of favorites
 app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('Not allowed to perform this action! Wrong account!');
+  } else {
   Users.findOneAndUpdate({ Username: req.params.Username }, {
     $pull: { FavoriteMovies: req.params.MovieID }
   },
@@ -219,10 +230,14 @@ app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { se
      res.json(updatedUser);
    }
  });
+  }
 });
 
 // Allow existing user to deregister
 app.delete('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('You\'re not alowed to delete other accounts!');
+  } else {
   Users.findOneAndRemove({ Username: req.params.Username })
     .then((user) => {
       if (!user) {
@@ -235,6 +250,7 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
       console.error(err);
       res.status(500).send('Error: ' + err);
     });
+  }
 });
 
 //Error handling
