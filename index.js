@@ -17,11 +17,18 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const cors = require('cors');
+app.use(cors());
+
 let auth = require('./auth')(app);
 const passport = require('passport');
 require('./passport');
+app.use(passport.initialize());
 
-mongoose.connect('mongodb://localhost:27017/myFlixDB', { useNewUrlParser: true, useUnifiedTopology: true });
+// mongoose.connect('mongodb://localhost:27017/myFlixDB', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect( process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+const { check, validationResult } = require('express-validator');
 
 // GET requests
 app.get('/', (req, res) => {
@@ -105,7 +112,22 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (r
 });
 
 // Allow new users to register
-app.post('/users', (req, res) => {
+app.post('/users', 
+[
+  check('Username', 'Username is required').isLength({min: 5}),
+  check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+  check('Password', 'Password is required').not().isEmpty(),
+  check('Email', 'Email does not appear to be valid').isEmail()
+], (req, res) => {
+
+  // check the validation object for errors
+  let errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  let hashedPassword = Users.hashPassword(req.body.Password);
   Users.findOne({ Username: req.body.Username })
     .then((user) => {
       if (user) {
@@ -114,14 +136,14 @@ app.post('/users', (req, res) => {
         Users
           .create({
             Username: req.body.Username,
-            Password: req.body.Password,
+            Password: hashedPassword,
             Email: req.body.Email,
             Birthday: req.body.Birthday
           })
           .then((user) =>{res.status(201).json(user) })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send('Error: ' + err);
+          .catch((err) => {
+            console.error(err);
+            res.status(500).send('Error: ' + err);
         })
       }
     })
@@ -131,12 +153,30 @@ app.post('/users', (req, res) => {
     });
 });
 
-// Allow users to update their user info (by username)
-app.put('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) => {
+// Allow users to update their user info
+app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
+[
+  check('Username', 'Username is required').isLength({min: 5}),
+  check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+  check('Password', 'Password is required').not().isEmpty(),
+  check('Email', 'Email does not appear to be valid').isEmail()
+], (req, res) => {
+
+  // check the validation object for errors
+  let errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  let hashedPassword = Users.hashPassword(req.body.Password);
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('Not allowed to perform this action! Wrong account!');
+  } else {
   Users.findOneAndUpdate({ Username: req.params.Username }, { $set:
     {
       Username: req.body.Username,
-      Password: req.body.Password,
+      Password: hashedPassword,
       Email: req.body.Email,
       Birthday: req.body.Birthday
     }
@@ -150,10 +190,14 @@ app.put('/users/:Username', passport.authenticate('jwt', { session: false }), (r
       res.json(updatedUser);
     }
   });
+  }
 });
 
 // Allow users to add a movie to their list of favorites
 app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('Not allowed to perform this action! Wrong account!');
+  } else {
   Users.findOneAndUpdate({ Username: req.params.Username }, {
     $addToSet: { FavoriteMovies: req.params.MovieID }
   },
@@ -166,10 +210,14 @@ app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { sess
      res.json(updatedUser);
    }
  });
+  }
 });
 
 // Allow users to remove a movie from their list of favorites
 app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('Not allowed to perform this action! Wrong account!');
+  } else {
   Users.findOneAndUpdate({ Username: req.params.Username }, {
     $pull: { FavoriteMovies: req.params.MovieID }
   },
@@ -182,10 +230,14 @@ app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { se
      res.json(updatedUser);
    }
  });
+  }
 });
 
 // Allow existing user to deregister
 app.delete('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if (req.user.Username !== req.params.Username) {
+    return res.status(401).send('You\'re not alowed to delete other accounts!');
+  } else {
   Users.findOneAndRemove({ Username: req.params.Username })
     .then((user) => {
       if (!user) {
@@ -198,6 +250,7 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
       console.error(err);
       res.status(500).send('Error: ' + err);
     });
+  }
 });
 
 //Error handling
@@ -207,6 +260,7 @@ app.use((err, req, res, next) => {
 });
 
 // listen for requests
-app.listen(8080, () => {
-  console.log('Your app is listening on port 8080.');
+const port = process.env.PORT || 8080;
+app.listen(port, '0.0.0.0',() => {
+ console.log('Listening on Port ' + port);
 });
