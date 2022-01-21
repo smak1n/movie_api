@@ -87,6 +87,21 @@ app.get('/movies/directors/:Name', passport.authenticate('jwt', { session: false
     });
 });
 
+
+//Return data about user by username
+app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) =>{
+  console.log(username)
+  Users.findOne({username: req.params.Username})
+    .then((users)=> {
+      console.log(users)
+      res.status(200).json(users);
+    })
+    .catch((err)=> {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
+
 // Get all users
 app.get('/users', passport.authenticate('jwt', { session: false }), (req, res) => {
   Users.find()
@@ -94,18 +109,6 @@ app.get('/users', passport.authenticate('jwt', { session: false }), (req, res) =
       res.status(200).json(users);
     })
     .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
-
-//Return data about user by username
-app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) =>{
-  Users.findOne({username: req.params.Username})
-    .then((users)=> {
-      res.status(200).json(users);
-    })
-    .catch((err)=> {
       console.error(err);
       res.status(500).send('Error: ' + err);
     });
