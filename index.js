@@ -90,7 +90,7 @@ app.get('/movies/directors/:Name', passport.authenticate('jwt', { session: false
 
 //Return data about user by username
 app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) =>{
-  console.log(username)
+  console.log(req.params.Username)
   Users.findOne({username: req.params.Username})
     .then((users)=> {
       console.log(users)
