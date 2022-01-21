@@ -91,7 +91,7 @@ app.get('/movies/directors/:Name', passport.authenticate('jwt', { session: false
 //Return data about user by username
 app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) =>{
   console.log(req.params.Username)
-  Users.findOne({username: req.params.Username})
+  Users.findOne({Username: req.params.Username})
     .then((users)=> {
       console.log(users)
       res.status(200).json(users);
@@ -131,7 +131,7 @@ app.post('/users',
   }
 
   let hashedPassword = Users.hashPassword(req.body.Password);
-  Users.findOne({ username: req.body.Username })
+  Users.findOne({ Username: req.body.Username })
     .then((user) => {
       if (user) {
         return res.status(400).send(req.body.Username + ' already exists');
