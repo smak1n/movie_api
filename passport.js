@@ -1,3 +1,15 @@
+/**
+ * @file This file implements passport strategies(Passport to implement basic HTTP 
+ * authentication to log registered users into your application, as well as JWT 
+ * authentication for subsequent requests to your API.). The "LocalStrategy" takes 
+ * username and password from the request body and checks its presence
+ * in the database collection. For subsequent requests the JWT strategy is used.
+ * @requires passport Passport is an authentication middleware for Node.js and Express.
+ * @requires passport-local library for basic HTTP authentication
+ * @requires './models.js' The file where data schemas and models are defined.
+ * @requires passport-jwt passport library for JWT authentication.
+ */
+
 const passport = require('passport'),
   LocalStrategy = require('passport-local').Strategy,
   Models = require('./models.js'),

@@ -1,10 +1,20 @@
+/**
+ * @file The auth file implements the authentication login registered user 
+ * @requires passport implements HTTP authentication
+ * @requires jwt To generate JWT using username to authorizing the endpoints
+ */ 
+
+
 const jwtSecret = 'your_jwt_secret';
-// This has to be the same key used in the JWTStrategy
 const jwt = require('jsonwebtoken'),
   passport = require('passport');
 
 require('./passport');
-// Your local passport file
+/**
+ * @function generateJWTToken
+ * @param {user} user attempts login with username and password
+ * @returns {string} JSON wen token.
+ */
 
 let generateJWTToken = (user) => {
   return jwt.sign(user, jwtSecret, {
@@ -16,6 +26,17 @@ let generateJWTToken = (user) => {
     // This is the algorithm used to “sign” or encode the values of the JWT
   });
 }
+
+/**
+ * POST login process
+ * Check that the username and password in the body of the request exist in the database. 
+ * If they do, you use the generateJWTToken(); 
+ * function to create a JWT based on the username and password, 
+ * which you then send back as a response to the client
+ * @function
+ * @param {router} 
+ * @returns {Object} An object conatining logged user and JWT data
+ */
 
 module.exports = (router) => {
   router.use(passport.initialize());

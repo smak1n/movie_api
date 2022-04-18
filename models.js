@@ -1,3 +1,10 @@
+/**
+ * @file The models file implements schemas for movies and users collections in mongo
+ * database. The schemas are used to perform CRUD opeartions. 
+ * @requires mongoose Connects to the database and implements schemas using models.
+ * @requires bcrypt Implements password encryption.
+ */
+
 const mongoose = require('mongoose');
 
 const bcrypt = require('bcrypt');

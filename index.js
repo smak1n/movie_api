@@ -1,3 +1,9 @@
+/** 
+ * @file The index file creates the Express application, sets up the server and implements routes to Api
+ * endpoints. Requests are authenticated using passport stratergies. The connect method establishes a 
+ * connection between mongoose and MongoDB Atlas. The app is hosted on Heroku.
+ */
+
 const express = require('express');
 const morgan = require('morgan');
 const uuid = require('uuid');
@@ -31,15 +37,35 @@ mongoose.connect( process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifie
 const { check, validationResult } = require('express-validator');
 
 // GET requests
+
+/**
+ * Welcome page
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @returns {string} The welcome message 
+ */ 
 app.get('/', (req, res) => {
   res.send('Welcome to my app!');
 });
 
+/**
+ * Welcome page
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @returns The documentation page
+ */ 
 app.get('/documentation', (req, res) => {
 	res.sendFile('public/documentation.html', { root: __dirname });
 });
 
-// Get the list of data about all movies
+
+/**
+ * Endpoint to GET a list of all movies
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @requires authentication JWT
+ * @returns {object} - JSON object with data from all movies
+ */
 app.get('/movies', passport.authenticate('jwt', { session: false }), (req, res) => {
   Movies.find()
     .then((movies) => {
@@ -51,7 +77,13 @@ app.get('/movies', passport.authenticate('jwt', { session: false }), (req, res) 
     });
 });
 
-// Return data about a single movie by title to the user
+/**
+ * Endpoint to GET a single movie object by title
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @requires authentication JWT
+ * @returns {object} - JSON object with data of a single movie
+ */
 app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), (req, res) => {
   Movies.findOne({Title: req.params.Title})
     .then((movie) => {
@@ -63,7 +95,13 @@ app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), (req
     });
 });
 
-//Return data about a genre to the user
+/**
+ * Endpoint to GET a list of all genres
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @requires authentication JWT
+ * @returns {object} - JSON object of a single genre
+ */
 app.get('/movies/genres/:Name', passport.authenticate('jwt', { session: false }), (req, res) => {
   Movies.find({"Genre.Name": req.params.Name})
     .then((movies) => {
@@ -75,7 +113,13 @@ app.get('/movies/genres/:Name', passport.authenticate('jwt', { session: false })
     });
 });
 
-//Return data about a director to the user
+/**
+ * Endpoint to GET a single director object by name
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @requires authentication JWT
+ * @returns {object} - JSON object of a single director
+ */
 app.get('/movies/directors/:Name', passport.authenticate('jwt', { session: false }), (req, res) => {
   Movies.find({"Director.Name": req.params.Name})
     .then((directors)=> {
@@ -88,7 +132,13 @@ app.get('/movies/directors/:Name', passport.authenticate('jwt', { session: false
 });
 
 
-//Return data about user by username
+/**
+ * Endpoint to GET a single user object by username
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @requires authentication JWT
+ * @returns {object} - JSON object of a single user's details
+ */
 app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) =>{
   console.log(req.params.Username)
   Users.findOne({Username: req.params.Username})
@@ -102,7 +152,13 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (r
     });
 });
 
-// Get all users
+/**
+ * Endpoint to GET a list of all users
+ * @method GET
+ * @param {requestCallback} - The callback that handles the response
+ * @requires authentication JWT
+ * @returns {object} - JSON object with details from all users
+ */
 app.get('/users', passport.authenticate('jwt', { session: false }), (req, res) => {
   Users.find()
     .then((users) => {
@@ -114,7 +170,14 @@ app.get('/users', passport.authenticate('jwt', { session: false }), (req, res) =
     });
 });
 
-// Allow new users to register
+/**
+ * Allow User to register
+ * @method POST
+ * @param {string} URL
+ * @param {Object} validationChain series validates the specified input fields 
+ * @param {requestCallback}
+ * @returns {Object} JSON Object holding data about the new user created, with an id.
+ * */
 app.post('/users', 
 [
   check('Username', 'Username is required').isLength({min: 5}),
@@ -156,7 +219,15 @@ app.post('/users',
     });
 });
 
-// Allow users to update their user info
+/**
+ * Update user by username
+ * @method PUT
+ * @param {string} URL
+ * @param {Object} validationChain series validates the specified input fields 
+ * @param {requestCallback}
+ * @requires authentication JWT
+ * @returns {Object} JSON Object holding data about the updated user.
+ * */
 app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
 [
   check('Username', 'Username is required').isLength({min: 5}),
@@ -196,7 +267,14 @@ app.put('/users/:Username', passport.authenticate('jwt', { session: false }),
   }
 });
 
-// Allow users to add a movie to their list of favorites
+/**
+ * Add a movie to user favorite list
+ * @method POST
+ * @param {string} URL /users/:Username/movies/:MovieID
+ * @param {requestCallback}
+ * @requires authentication JWT
+ * @returns {Object} JSON user object with updated favorite list
+ * */
 app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
   if (req.user.Username !== req.params.Username) {
     return res.status(401).send('Not allowed to perform this action! Wrong account!');
@@ -216,7 +294,14 @@ app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { sess
   }
 });
 
-// Allow users to remove a movie from their list of favorites
+/**
+ * Remove a movie to user favorite list
+ * @method DELETE
+ * @param {string} URL /users/:Username/movies/:MovieID
+ * @param {requestCallback}
+ * @requires authentication JWT
+ * @returns {Object} JSON user Object with modified favorite list.
+ * */
 app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
   if (req.user.Username !== req.params.Username) {
     return res.status(401).send('Not allowed to perform this action! Wrong account!');
@@ -236,7 +321,14 @@ app.delete('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { se
   }
 });
 
-// Allow existing user to deregister
+/**
+ * Deregister a user
+ * @method DELETE
+ * @param {string} URL /users/:Username
+ * @param {requestCallback}
+ * @requires authentication JWT
+ * @returns {String} A text message: ${Username} was deleted.
+ * */
 app.delete('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) => {
   if (req.user.Username !== req.params.Username) {
     return res.status(401).send('You\'re not alowed to delete other accounts!');
